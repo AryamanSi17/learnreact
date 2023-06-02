@@ -1,24 +1,62 @@
-import './App.css';
-import React from 'react';
-class App extends React.Component{
-  constructor(){
-    super();
-    console.warn("constructor")
+import React, { Component } from 'react';
+class App extends Component{
+  constructor(props){
+    super(props);
     this.state={
-      name:"Anil"
+      location:'',
+      weatherData:null,
+      error:null
+    };
+  }
+  componentDidUpdate(prevProps,prevState){
+    if(prevState.location!==this.state.location){
+      this.fetchWeatherData();
     }
   }
-  componentDidUpdate(){
-    console.log("compoentDidUpdate");
+  fetchWeatherData=()=>{
+    const apiKey="e3ce40c1f58b8761fb371b8bbeb92bb9";
+    const location=this.state;
+    const apiUrl="https://api.openweathermap.org/data/2.5/weather?name=${location}&appid=e3ce40c1f58b8761fb371b8bbeb92bb9";
+
+  fetch(apiUrl)
+  .then(response=>response.json())
+    .then(data => {
+      if (data.cod === 200) {
+        this.setState({ weatherData: data, error: null });
+      } else {
+        this.setState({ weatherData: null, error: data.message });
+      }
+    })
+    .catch(error => {
+      console.log(error);
+      this.setState({ weatherData: null, error: 'Failed to fetch weather data.' });
+    });
+  }
+  handleLocationChange(event) {
+    const location = event.target.value;
+    this.setState({ location });
   }
   render(){
-    console.warn("render");
+    const{location,weatherData,error}=this.state;
     return(
-      <div className='App'>
-        <h1>Component Did Update</h1>
-        <button onClick={()=>{this.setState({name:"Sidhu"})}}>Update Name</button>
+      <div>
+        <h1>WeatherApp</h1>
+        <input 
+        type='text'
+        value={location}
+        onChange={(event) => this.handleLocationChange(event)}
+        placeholder='Enter Location'
+        />
+        {weatherData && (
+          <div>
+            <h2>Weather Information for {location}</h2>
+            <p>Temperature: {weatherData.main.temp}°C</p>
+            <p>Conditions: {weatherData.weather[0].main}</p>
+            {/* Display additional weather information */}
+          </div>
+        )}
       </div>
     )
   }
-}
-export default App;
+  }
+  export default App;
